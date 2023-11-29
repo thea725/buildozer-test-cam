@@ -4,7 +4,6 @@ from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
 import cv2
 from kivy.clock import Clock
-from imutils import perspective
 import numpy as np
 import imutils
 class VideoApp(App):
@@ -103,7 +102,7 @@ class VideoApp(App):
             # in top-left, top-right, bottom-right, and bottom-left
             # order, then draw the outline of the rotated bounding
             # box
-            box = perspective.order_points(box)
+            box = self.order_points(box)
 
             # unpack the ordered bounding box, then compute the midpoint
             # between the top-left and top-right coordinates, followed by
@@ -173,6 +172,30 @@ class VideoApp(App):
         texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
         texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
         return texture
+    def order_points(self, pts):
+        # Initialize a list to store the ordered points
+        rect = np.zeros((4, 2), dtype="float32")
+
+        # Calculate the sum of each point's coordinates
+        s = np.sum(pts, axis=1)
+
+        # Find the top-left point (smallest sum)
+        rect[0] = pts[np.argmin(s)]
+
+        # Find the bottom-right point (largest sum)
+        rect[2] = pts[np.argmax(s)]
+
+        # Calculate the difference between points' coordinates
+        diff = np.diff(pts, axis=1)
+
+        # Find the top-right point (smallest difference)
+        rect[1] = pts[np.argmin(diff)]
+
+        # Find the bottom-left point (largest difference)
+        rect[3] = pts[np.argmax(diff)]
+
+        # Return the ordered points
+        return rect
 
 if __name__ == '__main__':
     VideoApp().run()
