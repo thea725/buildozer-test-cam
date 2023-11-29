@@ -10,7 +10,7 @@ import imutils
 class VideoApp(App):
     def build(self):
         self.pixelsPerMetric = 27.9394
-        self.cap = cv2.VideoCapture('./videos/vid4.mp4')  # Ganti dengan path video Anda
+        self.cap = cv2.VideoCapture('vid4.mp4')  # Ganti dengan path video Anda
         if not self.cap.isOpened():
             print("Error: Could not open video.")
             return
