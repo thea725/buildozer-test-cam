@@ -1,27 +1,15 @@
-#coding=utf-8
-#qpy:kivy
-
-import time
 from kivy.app import App
-from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
-from camera import Camera2
+from kivy.uix.camera import Camera
 
-class MyLayout(BoxLayout):
-    pass
-
-class MainApp(App):
+class CameraApp(App):
     def build(self):
-        return MyLayout()
-    def on_start(self):
-        Clock.schedule_once(self.detect,5)
+        # Membuat tata letak (layout) dengan kamera
+        layout = BoxLayout(orientation='vertical')
+        self.camera = Camera(resolution=(640, 480), play=True)
+        layout.add_widget(self.camera)
 
-    def detect(self,nap):
-        image=self.root.ids.camera.image
-        rows,cols=image.shape[:2]
-        ctime=time.ctime()[11:19]
-        self.root.ids.label.text='%s image rows:%d cols:%d'%(ctime,rows,cols)
-        Clock.schedule_once(self.detect,1)
+        return layout
 
 if __name__ == '__main__':
-    MainApp().run()
+    CameraApp().run()
