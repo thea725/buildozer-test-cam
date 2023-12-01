@@ -1,56 +1,43 @@
 from kivy.app import App
-from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivy.utils import platform
-from kivy.clock import Clock
-from applayout import AppLayout
-from android_permissions import AndroidPermissions
+from kivy.uix.camera import Camera
+from kivy.graphics.texture import Texture
+import cv2
+import numpy as np
 
-if platform == 'android':
-    from jnius import autoclass
-    from android.runnable import run_on_ui_thread
-    from android import mActivity
-    View = autoclass('android.view.View')
+class AndroidCamera(BoxLayout):
+    def __init__(self, **kwargs):
+        super(AndroidCamera, self).__init__(**kwargs)
 
-    @run_on_ui_thread
-    def hide_landscape_status_bar(instance, width, height):
-        # width,height gives false layout events, on pinch/spread 
-        # so use Window.width and Window.height
-        if Window.width > Window.height: 
-            # Hide status bar
-            option = View.SYSTEM_UI_FLAG_FULLSCREEN
-        else:
-            # Show status bar 
-            option = View.SYSTEM_UI_FLAG_VISIBLE
-        mActivity.getWindow().getDecorView().setSystemUiVisibility(option)
-elif platform != 'ios':
-    # Dispose of that nasty red dot, required for gestures4kivy.
-    from kivy.config import Config 
-    Config.set('input', 'mouse', 'mouse, disable_multitouch')
+        self.camera = Camera(play=True)
+        self.camera.bind(on_tex=self.update_texture)
+        self.add_widget(self.camera)
+
+    def update_texture(self, instance, texture):
+        frame = self.frame_from_buf()
+
+        # Additional processing or modification of the frame can be done here
+
+        self.frame_to_screen(frame)
+
+        # Update the camera texture
+        texture.blit_buffer(frame.tostring(), colorfmt='rgb', bufferfmt='ubyte')
+
+    def frame_from_buf(self):
+        w, h = self.camera.resolution
+        frame = np.frombuffer(self.camera._camera._buffer.tostring(), dtype='uint8').reshape((h + h // 2, w))
+        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_NV21)
+        return np.rot90(frame_bgr, 3)
+
+    def frame_to_screen(self, frame):
+        # Additional processing or modification of the frame can be done here
+
+        # Example: Display the frame directly without additional processing
+        pass
 
 class MyApp(App):
-    
     def build(self):
-        self.layout = AppLayout()
-        if platform == 'android':
-            Window.bind(on_resize=hide_landscape_status_bar)
-        return self.layout
+        return AndroidCamera()
 
-    def on_start(self):
-        self.dont_gc = AndroidPermissions(self.start_app)
-
-    def start_app(self):
-        self.dont_gc = None
-        # Can't connect camera till after on_start()
-        Clock.schedule_once(self.connect_camera)
-
-    def connect_camera(self,dt):
-        self.layout.edge_detect.connect_camera(analyze_pixels_resolution = 720,
-                                               enable_analyze_pixels = True,
-                                               enable_video = False)
-
-    def on_stop(self):
-        self.layout.edge_detect.disconnect_camera()
-
-MyApp().run()
-
+if __name__ == '__main__':
+    MyApp().run()
