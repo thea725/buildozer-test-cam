@@ -7,7 +7,7 @@ title = Recycle
 package.name = recycleai
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.recycleai
+package.domain = org.test
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -16,7 +16,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp4
 
 # (list) List of inclusions using pattern matching
-source.include_patterns = assets/*,videos/*
+source.include_patterns = assets/*
 
 # (list) Source files to exclude (let empty to not exclude anything)
 #source.exclude_exts = spec
@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3==3.7.6,hostpython3==3.7.6, kivy, pillow, imutils==0.5.3, numpy==1.17.4, opencv-python
+requirements = python3==3.7.6,hostpython3==3.7.6, kivy, pillow, numpy==1.21.6,opencv
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -95,7 +95,7 @@ fullscreen = 0
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-#android.permissions = android.permission.INTERNET, (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18)
+android.permissions = android.permission.CAMERA
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
