@@ -131,8 +131,7 @@ class AndroidCamera(BoxLayout):
         w, h = self.camera.resolution
         frame = np.frombuffer(self.camera._camera._buffer.tostring(), dtype='uint8').reshape((h + h // 2, w))
         enhance = normalization(frame)
-        result = edge_detection(frame, enhance)
-        frame_bgr = cv2.cvtColor(result, cv2.COLOR_YUV2BGR_NV21)
+        frame_bgr = cv2.cvtColor(enhance, cv2.COLOR_YUV2BGR_NV21)
         return frame_bgr
 
 class MyApp(App):
