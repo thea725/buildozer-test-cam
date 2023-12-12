@@ -123,16 +123,16 @@ class AndroidCamera(BoxLayout):
 
     def update_texture(self, instance, texture):
         frame = self.frame_from_buf()
-
+        enhance = normalization(frame)
+        result = edge_detection(frame, enhance)
         # Update the camera texture
-        texture.blit_buffer(frame.tostring(), colorfmt='rgb', bufferfmt='ubyte')
+        texture.blit_buffer(result.tostring(), colorfmt='rgb', bufferfmt='ubyte')
 
     def frame_from_buf(self):
         w, h = self.camera.resolution
         frame = np.frombuffer(self.camera._camera._buffer.tostring(), dtype='uint8').reshape((h + h // 2, w))
-        enhance = normalization(frame)
-        frame_bgr = cv2.cvtColor(enhance, cv2.COLOR_YUV2BGR_NV21)
-        return frame_bgr
+        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_NV21)
+        return np.rot90(frame_bgr, 2)
 
 class MyApp(App):
     def build(self):
