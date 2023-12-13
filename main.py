@@ -28,6 +28,10 @@ class CameraApp(App):
     def update(self, dt):
         # Mendapatkan frame dari kamera
         frame = self.camera.texture
+
+        if frame is None:
+            frame = cv2.imread("/data/data/org.test.recycleai/files/app/image.jpg")
+            
         if frame is not None:
             # Mengubah frame ke format yang dapat diolah oleh OpenCV
             frame_data = frame.pixels
