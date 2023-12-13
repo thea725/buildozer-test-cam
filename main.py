@@ -1,44 +1,55 @@
-# Import library Kivy dan Plyer
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
-from kivy.clock import Clock
-from plyer import camera
+import android
+import android.activity
+from os import remove
+from jnius import autoclass, cast
+from plyer.facades import Camera
+from plyer.platforms.android import activity
 
-# Import library OpenCV
-import cv2
-from PIL import Image as PILImage
-from io import BytesIO
-import numpy as np
+Intent = autoclass('android.content.Intent')
+PythonActivity = autoclass('org.kivy.android.PythonActivity')
+MediaStore = autoclass('android.provider.MediaStore')
+Uri = autoclass('android.net.Uri')
 
-class CameraApp(App):
-    def build(self):
-        self.layout = BoxLayout(orientation='vertical')
-        self.image = Image()
-        self.layout.add_widget(self.image)
 
-        # Fungsi untuk mengambil dan memproses frame dari kamera
-        def update_frame(dt):
-            frame = camera.take_picture()
-            if frame:
-                # Mengonversi frame ke format array NumPy
-                frame_np = np.array(PILImage.open(BytesIO(frame)))
+class AndroidCamera(Camera):
 
-                # Mengubah gambar menjadi grayscale
-                gray_frame = cv2.cvtColor(frame_np, cv2.COLOR_BGR2GRAY)
+    def _take_picture(self, on_complete, filename=None):
+        assert on_complete is not None
+        self.on_complete = on_complete
+        self.filename = filename
+        android.activity.unbind(on_activity_result=self._on_activity_result)
+        android.activity.bind(on_activity_result=self._on_activity_result)
+        intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        uri = Uri.parse('file://' + filename)
+        parcelable = cast('android.os.Parcelable', uri)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, parcelable)
+        activity.startActivityForResult(intent, 0x123)
 
-                # Menampilkan gambar di antarmuka Kivy
-                self.image.texture = self.convert_frame_to_texture(gray_frame)
+    def _take_video(self, on_complete, filename=None):
+        assert on_complete is not None
+        self.on_complete = on_complete
+        self.filename = filename
+        android.activity.unbind(on_activity_result=self._on_activity_result)
+        android.activity.bind(on_activity_result=self._on_activity_result)
+        intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+        uri = Uri.parse('file://' + filename)
+        parcelable = cast('android.os.Parcelable', uri)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, parcelable)
 
-        # Mengatur interval untuk pembaruan frame (misalnya, setiap 1/30 detik)
-        Clock.schedule_interval(update_frame, 1/30)
+        # 0 = low quality, suitable for MMS messages,
+        # 1 = high quality
+        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1)
+        activity.startActivityForResult(intent, 0x123)
 
-        return self.layout
+    def _on_activity_result(self, requestCode, resultCode, intent):
+        if requestCode != 0x123:
+            return
+        android.activity.unbind(on_activity_result=self._on_activity_result)
+        if self.on_complete(self.filename):
+            self._remove(self.filename)
 
-    def convert_frame_to_texture(self, frame):
-        # Mengonversi frame OpenCV menjadi format yang dapat ditampilkan oleh Kivy
-        image_texture = PILImage.fromarray(frame).tostring()
-        return image_texture
-
-if __name__ == '__main__':
-    CameraApp().run()
+    def _remove(self, fn):
+        try:
+            remove(fn)
+        except OSError:
+            pass
