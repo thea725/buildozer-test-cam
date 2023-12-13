@@ -16,12 +16,8 @@ class CameraApp(App):
         self.camera = Camera(resolution=(640, 480), play=True)
         layout.add_widget(self.camera)
 
-        # Menambahkan objek tampilan gambar untuk menampilkan hasil pemrosesan OpenCV
-        self.image = Image()
-        layout.add_widget(self.image)
-
         # Menjadwalkan fungsi update setiap frame kamera
-        Clock.schedule_interval(self.update, 1.0 / 30.0)
+        self.camera.bind(on_tex=self.update)
 
         return layout
 
@@ -47,7 +43,7 @@ class CameraApp(App):
             # Menampilkan gambar hasil pemrosesan
             texture = Texture.create(size=(gray.shape[1], gray.shape[0]), colorfmt='luminance')
             texture.blit_buffer(buf, colorfmt='luminance', bufferfmt='ubyte')
-            self.image.texture = texture
+            self.camera.texture = texture
 
 if __name__ == '__main__':
     CameraApp().run()
