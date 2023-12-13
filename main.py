@@ -9,7 +9,7 @@ class AndroidCamera(BoxLayout):
     def __init__(self, **kwargs):
         super(AndroidCamera, self).__init__(**kwargs)
 
-        self.camera = Camera(play=True)
+        self.camera = Camera(play=True, index=0)
         self.camera.bind(on_tex=self.update_texture)
         self.add_widget(self.camera)
 
