@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.camera import Camera
+from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
 import cv2
 import numpy as np
@@ -9,31 +10,27 @@ class AndroidCamera(BoxLayout):
     def __init__(self, **kwargs):
         super(AndroidCamera, self).__init__(**kwargs)
 
-        self.camera = Camera(play=True, index=1)
+        self.camera = Camera(play=True, index=0)
         self.camera.bind(on_tex=self.update_texture)
-        self.add_widget(self.camera)
+
+    def build(self):
+        self.layout = BoxLayout(orientation='vertical')
+        self.image = Image()
+        self.layout.add_widget(self.image)
+
+        return self.layout
 
     def update_texture(self, instance, texture):
-        frame = self.frame_from_buf()
-
-        # Additional processing or modification of the frame can be done here
-
-        self.frame_to_screen(frame)
-
-        # Update the camera texture
-        texture.blit_buffer(frame.tostring(), colorfmt='rgb', bufferfmt='ubyte')
-
-    def frame_from_buf(self):
         w, h = self.camera.resolution
         frame = np.frombuffer(self.camera._camera._buffer.tostring(), dtype='uint8').reshape((h + h // 2, w))
-        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_NV21)
-        return np.rot90(frame_bgr, 3)
+        frame_bgr = np.rot90(cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_NV21), 3)
+        
+        # Buat tekstur Kivy dari citra OpenCV
+        texture = Texture.create(size=(frame_bgr.shape[1], frame_bgr.shape[0]), colorfmt='rgb')
+        texture.blit_buffer(frame_bgr.tostring(), colorfmt='rgb', bufferfmt='ubyte')
 
-    def frame_to_screen(self, frame):
-        # Additional processing or modification of the frame can be done here
-
-        # Example: Display the frame directly without additional processing
-        pass
+        # Tampilkan gambar di aplikasi
+        self.image.texture = texture
 
 class MyApp(App):
     def build(self):
