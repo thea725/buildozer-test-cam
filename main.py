@@ -1,40 +1,44 @@
+# Import library Kivy dan Plyer
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.camera import Camera
 from kivy.uix.image import Image
-from kivy.graphics.texture import Texture
+from kivy.clock import Clock
+from plyer import camera
+
+# Import library OpenCV
 import cv2
+from PIL import Image as PILImage
+from io import BytesIO
 import numpy as np
 
-class AndroidCamera(BoxLayout):
-    def __init__(self, **kwargs):
-        super(AndroidCamera, self).__init__(**kwargs)
-
-        self.camera = Camera(play=True, index=0)
-        self.camera.bind(on_tex=self.update_texture)
-
+class CameraApp(App):
     def build(self):
         self.layout = BoxLayout(orientation='vertical')
         self.image = Image()
         self.layout.add_widget(self.image)
 
+        # Fungsi untuk mengambil dan memproses frame dari kamera
+        def update_frame(dt):
+            frame = camera.take_picture()
+            if frame:
+                # Mengonversi frame ke format array NumPy
+                frame_np = np.array(PILImage.open(BytesIO(frame)))
+
+                # Mengubah gambar menjadi grayscale
+                gray_frame = cv2.cvtColor(frame_np, cv2.COLOR_BGR2GRAY)
+
+                # Menampilkan gambar di antarmuka Kivy
+                self.image.texture = self.convert_frame_to_texture(gray_frame)
+
+        # Mengatur interval untuk pembaruan frame (misalnya, setiap 1/30 detik)
+        Clock.schedule_interval(update_frame, 1/30)
+
         return self.layout
 
-    def update_texture(self, instance, texture):
-        w, h = self.camera.resolution
-        frame = np.frombuffer(self.camera._camera._buffer.tostring(), dtype='uint8').reshape((h + h // 2, w))
-        frame_bgr = np.rot90(cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_NV21), 3)
-        
-        # Buat tekstur Kivy dari citra OpenCV
-        texture = Texture.create(size=(frame_bgr.shape[1], frame_bgr.shape[0]), colorfmt='rgb')
-        texture.blit_buffer(frame_bgr.tostring(), colorfmt='rgb', bufferfmt='ubyte')
-
-        # Tampilkan gambar di aplikasi
-        self.image.texture = texture
-
-class MyApp(App):
-    def build(self):
-        return AndroidCamera()
+    def convert_frame_to_texture(self, frame):
+        # Mengonversi frame OpenCV menjadi format yang dapat ditampilkan oleh Kivy
+        image_texture = PILImage.fromarray(frame).tostring()
+        return image_texture
 
 if __name__ == '__main__':
-    MyApp().run()
+    CameraApp().run()
