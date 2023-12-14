@@ -1,9 +1,9 @@
 from kivy.app import App
-from kivy.uix.camera import Camera
+from plyer import camera
 
 class CameraApp(App):
     def build(self):
-        return Camera()
+        camera.take_picture()
 
 if __name__ == '__main__':
     CameraApp().run()
