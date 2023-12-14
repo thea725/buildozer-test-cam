@@ -1,31 +1,85 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.camera import Camera
 from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
+from kivy.core.camera import Camera as CoreCamera
+from kivy.properties import NumericProperty, ListProperty, BooleanProperty
 import cv2
 import numpy as np
+
+class Camera(Image):
+    play = BooleanProperty(False)
+    index = NumericProperty(-1)
+    resolution = ListProperty([-1, -1])
+
+    def __init__(self, **kwargs):
+        self._camera = None
+        super(Camera, self).__init__(**kwargs)
+        if self.index == -1:
+            self.index = 0
+        on_index = self._on_index
+        fbind = self.fbind
+        fbind('index', on_index)
+        fbind('resolution', on_index)
+        on_index()
+
+    def on_tex(self, camera):
+        frame = camera.frame
+        if frame is not None:
+            # Convert the frame to grayscale using OpenCV
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Convert the grayscale frame to a Kivy texture
+            texture = self._frame_to_texture(gray_frame)
+            
+            # Update the widget's texture and trigger a canvas update
+            self.texture = texture
+            self.texture_size = list(texture.size)
+            self.canvas.ask_update()
+
+    def _on_index(self, *largs):
+        self._camera = None
+        if self.index < 0:
+            return
+        if self.resolution[0] < 0 or self.resolution[1] < 0:
+            self._camera = CoreCamera(index=self.index, stopped=True)
+        else:
+            self._camera = CoreCamera(index=self.index,
+                                      resolution=self.resolution, stopped=True)
+        if self.play:
+            self._camera.start()
+
+        self._camera.bind(on_texture=self.on_tex)
+
+    def on_play(self, instance, value):
+        if not self._camera:
+            return
+        if value:
+            self._camera.start()
+        else:
+            self._camera.stop()
+
+    def _frame_to_texture(self, frame):
+        # Convert the OpenCV frame to a Kivy texture
+        texture = self._camera._frame_to_texture(frame)
+        return texture
+
+
 
 class AndroidCamera(BoxLayout):
     def __init__(self, **kwargs):
         super(AndroidCamera, self).__init__(**kwargs)
 
-        # Camera Widget
         self.camera = Camera(play=True)
         self.camera.bind(on_tex=self.update_texture)
         self.add_widget(self.camera)
-
-        # Image Widget for displaying processed grayscale image
-        self.image_widget = Image()
-        self.add_widget(self.image_widget)
 
     def update_texture(self, instance, texture):
         frame = self.frame_from_buf()
 
         # Additional processing or modification of the frame can be done here
-        grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        self.frame_to_screen(grayscale_frame)
+        self.frame_to_screen(frame)
 
         # Update the camera texture
         texture.blit_buffer(frame.tostring(), colorfmt='rgb', bufferfmt='ubyte')
@@ -39,13 +93,8 @@ class AndroidCamera(BoxLayout):
     def frame_to_screen(self, frame):
         # Additional processing or modification of the frame can be done here
 
-        # Display the processed frame in the Image widget
-        texture = self.image_widget.texture
-        if texture is None:
-            texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='luminance')
-            self.image_widget.texture = texture
-        texture.blit_buffer(frame.tobytes(), colorfmt='luminance', bufferfmt='ubyte')
-        self.image_widget.canvas.ask_update()
+        # Example: Display the frame directly without additional processing
+        pass
 
 class MyApp(App):
     def build(self):
