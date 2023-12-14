@@ -40,9 +40,12 @@ class AndroidCamera(BoxLayout):
         # Additional processing or modification of the frame can be done here
 
         # Display the processed frame in the Image widget
-        texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='luminance')
+        texture = self.image_widget.texture
+        if texture is None:
+            texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='luminance')
+            self.image_widget.texture = texture
         texture.blit_buffer(frame.tobytes(), colorfmt='luminance', bufferfmt='ubyte')
-        self.image_widget.texture = texture
+        self.image_widget.canvas.ask_update()
 
 class MyApp(App):
     def build(self):
