@@ -137,7 +137,7 @@ def kivy_texture_to_numpy(texture):
 
 class Camera(Image):
     play = BooleanProperty(False)
-    index = NumericProperty(-1)
+    index = NumericProperty(0)
     resolution = ListProperty([-1, -1])
 
     def __init__(self, **kwargs):
