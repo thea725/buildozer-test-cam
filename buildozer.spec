@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3==3.7.6,hostpython3==3.7.6, kivy, pillow, numpy==1.21.6,opencv,plyer
+requirements = python3==3.7.6,hostpython3==3.7.6, kivy, pillow, numpy==1.21.6,opencv
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -107,7 +107,7 @@ android.permissions = android.permission.CAMERA
 #android.minapi = 21
 
 # (int) Android SDK version to use
-#android.sdk = 20
+android.sdk = 20
 
 # (str) Android NDK version to use
 #android.ndk = 23b
