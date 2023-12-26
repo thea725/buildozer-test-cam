@@ -51,7 +51,7 @@ requirements = python3==3.7.6,hostpython3==3.7.6, kivy, pillow, numpy==1.21.6,op
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
-orientation = portrait
+orientation = landscape
 
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
@@ -107,7 +107,7 @@ android.permissions = android.permission.CAMERA
 #android.minapi = 21
 
 # (int) Android SDK version to use
-android.sdk = 20
+#android.sdk = 20
 
 # (str) Android NDK version to use
 #android.ndk = 23b
