@@ -6,8 +6,8 @@ from kivy.core.camera import Camera as CoreCamera
 from kivy.properties import NumericProperty, ListProperty, BooleanProperty
 import cv2
 import numpy as np
-# from android.permissions import request_permissions, Permission
-# request_permissions([Permission.CAMERA])
+from android.permissions import request_permissions, Permission
+request_permissions([Permission.CAMERA])
 __all__ = ('Camera', )
 
 
