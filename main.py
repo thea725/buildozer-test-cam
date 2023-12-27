@@ -8,11 +8,10 @@ import cv2
 import numpy as np
 
 from os import environ
-def platform():
-    if "ANDROID_ARGUMENT" in environ:
-        from android.permissions import request_permissions, Permission
-        request_permissions([Permission.CAMERA])
-        __all__ = ('Camera', )
+if "ANDROID_ARGUMENT" in environ:
+    from android.permissions import request_permissions, Permission
+    request_permissions([Permission.CAMERA])
+    __all__ = ('Camera', )
 
 def euclidean(point1, point2):
     # Check if the dimensions of the two points are the same
@@ -124,7 +123,7 @@ def edge_detection(frame, img):
 def kivy_texture_to_numpy(texture):
     # Ensure that the texture has been loaded
     texture_size = texture.size
-    texture.flip_vertical()  # Flip the texture vertically to match NumPy array orientation
+    # texture.flip_vertical()  # Flip the texture vertically to match NumPy array orientation
 
     # Read the pixel data from the texture
     buffer = texture.pixels
@@ -158,8 +157,11 @@ class Camera(Image):
 
     def on_tex(self, camera):
         frame = kivy_texture_to_numpy(camera.texture)
+        # frame = np.rot90(frame, 2)
+
         enhance = normalization(frame)
         result = edge_detection(frame, enhance)
+        # result = cv2.flip(result, 0)
         
         texture = Texture.create(size=(result.shape[1], result.shape[0]), colorfmt='rgb')
         texture.blit_buffer(result.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
