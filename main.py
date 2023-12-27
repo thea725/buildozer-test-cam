@@ -154,7 +154,7 @@ class Camera(Image):
         on_index()
 
     def on_tex(self, camera):
-        frame = np.rot90((kivy_texture_to_numpy(camera.texture)), 2)
+        frame = kivy_texture_to_numpy(camera.texture)
         # result = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         enhance = normalization(frame)
         result = edge_detection(frame, enhance)
