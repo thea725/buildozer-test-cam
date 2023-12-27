@@ -6,8 +6,8 @@ from kivy.core.camera import Camera as CoreCamera
 from kivy.properties import NumericProperty, ListProperty, BooleanProperty
 import cv2
 import numpy as np
-from android.permissions import request_permissions, Permission
-request_permissions([Permission.CAMERA])
+# from android.permissions import request_permissions, Permission
+# request_permissions([Permission.CAMERA])
 __all__ = ('Camera', )
 
 
@@ -154,13 +154,12 @@ class Camera(Image):
         on_index()
 
     def on_tex(self, camera):
-        frame = kivy_texture_to_numpy(camera.texture)
-        # result = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame = cv2.flip(kivy_texture_to_numpy(camera.texture), 0)
         enhance = normalization(frame)
         result = edge_detection(frame, enhance)
         
         texture = Texture.create(size=(result.shape[1], result.shape[0]), colorfmt='rgb')
-        texture.blit_buffer(result.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
+        texture.blit_buffer(cv2.flip(result, 0).tobytes(), colorfmt='rgb', bufferfmt='ubyte')
 
         self.texture = texture
         self.texture_size = list(texture.size)
