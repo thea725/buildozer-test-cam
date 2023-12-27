@@ -157,11 +157,11 @@ class Camera(Image):
 
     def on_tex(self, camera):
         frame = kivy_texture_to_numpy(camera.texture)
-        # frame = np.rot90(frame, 2)
+        frame = cv2.flip(frame, 1)
 
         enhance = normalization(frame)
         result = edge_detection(frame, enhance)
-        # result = cv2.flip(result, 0)
+        result = cv2.flip(result, 1)
         
         texture = Texture.create(size=(result.shape[1], result.shape[0]), colorfmt='rgb')
         texture.blit_buffer(result.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
