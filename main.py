@@ -87,9 +87,9 @@ def edge_detection(frame, img):
         dimA = dA / pixelsPerMetric
         dimB = dB / pixelsPerMetric
 
-        # if (dimA>5 and dimB>14) and (dimA<15 and dimB<37): #ukuran botol di antara 5-5 dan 14-37cm
         # if dimA>1 and dimB>10 and (int(dimB/dimA) < 4 and int(dimB/dimA) > 2):
-        if True:
+        if dimB>0.7:
+        # if True:
             # print(dB)
             # print("-",dimB)
             cv2.drawContours(orig, [box.astype("int")], -1, (0, 255, 0), 2)
@@ -143,6 +143,8 @@ class Camera(Image):
     def __init__(self, **kwargs):
         self._camera = None
         super(Camera, self).__init__(**kwargs)
+        self.size_hint_x = 1
+        self.allow_stretch = True
         if self.index == -1:
             self.index = 0
         on_index = self._on_index
@@ -152,7 +154,8 @@ class Camera(Image):
         on_index()
 
     def on_tex(self, camera):
-        frame = np.rot90((kivy_texture_to_numpy(camera.texture)), 3)
+        # frame = np.rot90((kivy_texture_to_numpy(camera.texture)), 3)
+        frame = kivy_texture_to_numpy(camera.texture)
         # result = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         enhance = normalization(frame)
         result = edge_detection(frame, enhance)
