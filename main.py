@@ -90,7 +90,7 @@ def edge_detection(frame, img):
         dimB = dB / pixelsPerMetric
 
         # if dimA>1 and dimB>10 and (int(dimB/dimA) < 4 and int(dimB/dimA) > 2):
-        if dimB>0.7:
+        if dimB>2:
         # if True:
             # print(dB)
             # print("-",dimB)
