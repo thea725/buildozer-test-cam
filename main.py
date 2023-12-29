@@ -50,8 +50,23 @@ def normalization(img):
     equ[np.where(equ <= upper_black)] = 0
 
     return equ
-def edge_detection(frame, img):
-    contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+def img_processing(frame):
+    # Tingkatkan kontras menggunakan OpenCV
+    alpha = 3.5  # Faktor peningkatan kontras, sesuaikan sesuai kebutuhan
+    beta = 0    # Bias
+    contrast = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
+    gray = cv2.cvtColor(contrast, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blur, 50, 200)
+
+    kernel = np.ones((5, 5), np.uint8)
+    dilated_edges = cv2.dilate(edges, kernel, iterations=1)
+    eroded_edges = cv2.erode(dilated_edges, kernel, iterations=1)
+    
+    return eroded_edges
+def edge_detection(frame):
+    edges = img_processing(frame)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     min_contour_area = 10  # Adjust this value as needed
     filtered_contours = [contour for contour in contours if cv2.contourArea(contour) >= min_contour_area]
@@ -159,8 +174,8 @@ class Camera(Image):
         frame = kivy_texture_to_numpy(camera.texture)
         frame = np.rot90(cv2.flip(frame, 1), 2)
 
-        enhance = normalization(frame)
-        result = edge_detection(frame, enhance)
+        # enhance = normalization(frame)
+        result = edge_detection(frame)
         result = np.rot90(cv2.flip(result, 1), 2)
         
         texture = Texture.create(size=(result.shape[1], result.shape[0]), colorfmt='rgb')
